@@ -10,6 +10,9 @@ module.exports = {
         'gray-message': '#40444B',
         'gray-user': '#292B2F',
         'gray-chat': '#36393F',
+        'gray-sidetext': '#96989D',
+        'gray-icons': '#B9BBBE',
+        'gray-placeholder': '#A3A6AA',
       }
     },
   },
