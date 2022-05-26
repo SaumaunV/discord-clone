@@ -1,5 +1,6 @@
 import { FaHashtag } from "react-icons/fa";
 import { IoMdAddCircle } from "react-icons/io";
+import Message from "./Message";
 
 function Chat() {
   return (
@@ -8,14 +9,16 @@ function Chat() {
         <FaHashtag className="mr-2 text-gray-icons text-xl" /> general
       </div>
 
-      <div className="flex-1"></div>
+      <div className="flex flex-col flex-1 justify-end">
+          <Message />
+      </div>
 
       <form className="flex m-4 mb-6 items-center bg-gray-message rounded-lg  px-4">
         <IoMdAddCircle className="text-2xl text-gray-icons" />
         <input
           type="text"
           placeholder="Message #general"
-          className="w-full h-11 pl-4 rounded-lg bg-gray-message text-white select-none outline-none placeholder:text-gray-placeholder
+          className="w-full h-11 pl-4 rounded-lg bg-gray-message text-white select-none outline-none placeholder:text-gray-chat-text
           placeholder:text-opacity-50"
         />
       </form>
