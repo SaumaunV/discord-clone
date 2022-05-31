@@ -1,12 +1,14 @@
 import { FaHashtag } from "react-icons/fa";
 import { IoMdAddCircle } from "react-icons/io";
+import { useStateValue } from "../context/StateProvider";
 import Message from "./Message";
 
 function Chat() {
+  const [{ channel }] = useStateValue();
   return (
     <div className="bg-gray-chat flex flex-col flex-[0.85]">
       <div className="flex items-center h-12 p-3 w-full text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
-        <FaHashtag className="mr-2 text-gray-icons text-xl" /> general
+        <FaHashtag className="mr-2 text-gray-icons text-xl" /> {channel.name}
       </div>
 
       <div className="flex flex-col flex-1 justify-end">

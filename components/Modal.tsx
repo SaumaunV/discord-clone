@@ -1,12 +1,20 @@
 import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
+import { IoMdVolumeHigh } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 
 interface Props {
+  type: string;
   setModal: Dispatch<SetStateAction<boolean>>;
+  refreshData: () => void
 }
 
-function Modal({ setModal }: Props) {
+interface ChannelType {
+  name: string;
+  type: string;
+}
+
+function Modal({ type, setModal, refreshData }: Props) {
   const background = useRef(null);
   const [channelName, setChannelName] = useState("");
 
@@ -15,6 +23,21 @@ function Modal({ setModal }: Props) {
       setModal(false);
     }
   };
+
+  const createChannel = async (data: ChannelType) => {
+    console.log("yo")
+    console.log(JSON.stringify(data));
+    await fetch("/api/channel", {
+      body: JSON.stringify(data),
+      method: 'POST',
+    });
+    refreshData();
+  }
+
+  const createButtonHandler = () => {
+    createChannel({name: channelName, type});
+    setModal(false);
+  }
 
   return (
     <div
@@ -38,7 +61,7 @@ function Modal({ setModal }: Props) {
             Channel Name
           </h5>
           <div className="bg-modal-input-bg h-10 rounded-[3px] flex items-center p-2 text-gray-text">
-            <FaHashtag />
+            {type === 'text' ? <FaHashtag /> : <IoMdVolumeHigh className="text-xl"/>}
             <input
               type="text"
               placeholder="new-channel"
@@ -59,6 +82,7 @@ function Modal({ setModal }: Props) {
             className="bg-blue-create-button px-4 py-2 rounded-[3px] font-medium disabled:cursor-not-allowed
           disabled:opacity-50 disabled:bg-blue-create-button hover:bg-blue-create-button-hover transition"
             disabled={channelName ? false : true}
+            onClick={createButtonHandler}
           >
             Create Channel
           </button>

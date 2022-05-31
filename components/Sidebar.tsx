@@ -7,21 +7,19 @@ import { IoMdMicOff } from "react-icons/io";
 import { BsHeadphones } from 'react-icons/bs';
 import { IoMdSettings } from "react-icons/io";
 import Modal from './Modal';
+import { Channel } from '@prisma/client';
 
-interface Channel {
-  id: string,
-  name: string,
+interface Props {
+  textChannels: Channel[];
+  voiceChannels: Channel[];
+  refreshData: () => void
 }
 
 
-function Sidebar() {
-  const [textChannels, setTextChannel] = useState<Channel[]>([
-    { id: "1", name: "general" },
-    { id: "2", name: "test" },
-  ]);
-  const [voiceChannels, setVoiceChannel] = useState<Channel[]>([]);
+function Sidebar({ textChannels, voiceChannels, refreshData }: Props) {
 
   const [modal, setModal] = useState(false);
+  const [modalType, setModalType] = useState("");
   const [mic, setMic] = useState(true);
 
   return (
@@ -37,20 +35,43 @@ function Sidebar() {
             <IoIosArrowDown className="mr-0.5" /> TEXT CHANNELS
           </div>
           <IoMdAdd
-            onClick={() => setModal(true)}
+            onClick={() => {
+              setModal(true);
+              setModalType("text");
+            }}
             className="text-xl hover:text-white cursor-pointer"
           />
         </div>
         {textChannels.map((channel) => (
-          <SidebarChannel key={channel.id} id={channel.id} type="text" />
+          <SidebarChannel
+            key={channel.id}
+            id={channel.id}
+            name={channel.name}
+            refreshData={refreshData}
+            type={channel.type}
+          />
         ))}
         <div className="flex items-center justify-between pr-3 text-gray-sidetext mt-5">
           <div className="flex items-center text-xs font-medium">
             <IoIosArrowDown className="mr-0.5" /> VOICE CHANNELS
           </div>
-          <IoMdAdd className="text-xl" />
+          <IoMdAdd
+            onClick={() => {
+              setModal(true);
+              setModalType("voice");
+            }}
+            className="text-xl hover:text-white cursor-pointer"
+          />
         </div>
-        <SidebarChannel type="audio" id="3" />
+        {voiceChannels.map((channel) => (
+          <SidebarChannel
+            key={channel.id}
+            id={channel.id}
+            name={channel.name}
+            refreshData={refreshData}
+            type={channel.type}
+          />
+        ))}
       </div>
 
       <div className="flex items-center bg-gray-user h-14 px-2">
@@ -85,7 +106,9 @@ function Sidebar() {
         </div>
       </div>
 
-      {modal && <Modal setModal={setModal} />}
+      {modal && (
+        <Modal type={modalType} setModal={setModal} refreshData={refreshData} />
+      )}
     </div>
   );
 }

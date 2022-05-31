@@ -1,25 +1,25 @@
 import React, { createContext, Dispatch, useContext, useReducer } from 'react';
 
 interface StateType {
-    channel: string,
+    channel: {id: string, name: string},
 }
 
 interface Action {
-    type: 'CHANGE_CHANNEL'; id: string,
+    type: 'CHANGE_CHANNEL', id: string, name: string
 }
 
 export const initialState = {
-    channel: "",
+    channel: {id: "", name: ""},
 }
 
-type ContextType = [{ channel: string }, Dispatch<Action>]
+type ContextType = [{ channel: {id: string, name: string} }, Dispatch<Action>]
 
 export function reducer(state: StateType, action: Action){
     switch(action.type) {
         case "CHANGE_CHANNEL": 
             return {
                 ...state,
-                channel: action.id
+                channel: {id: action.id , name: action.name}
             }
     }
 }
