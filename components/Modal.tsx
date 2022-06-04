@@ -79,8 +79,8 @@ function Modal({ type, setModal, refreshData }: Props) {
             Cancel
           </button>
           <button
-            className="bg-blue-create-button px-4 py-2 rounded-[3px] font-medium disabled:cursor-not-allowed
-          disabled:opacity-50 disabled:bg-blue-create-button hover:bg-blue-create-button-hover transition"
+            className="bg-blue-button px-4 py-2 rounded-[3px] font-medium disabled:cursor-not-allowed
+          disabled:opacity-50 disabled:bg-blue-button hover:bg-blue-button-hover transition"
             disabled={channelName ? false : true}
             onClick={createButtonHandler}
           >

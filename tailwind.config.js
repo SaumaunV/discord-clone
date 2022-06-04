@@ -18,8 +18,8 @@ module.exports = {
         "gray-modalbg": "rgb(54, 57, 63)",
         "modal-input-bg": "rgb(32,34,37)",
         "modal-bg-buttons": "rgb(47, 49, 54)",
-        "blue-create-button": "rgb(88, 101, 242)",
-        "blue-create-button-hover": "rgb(71, 82, 196)",
+        "blue-button": "rgb(88, 101, 242)",
+        "blue-button-hover": "rgb(71, 82, 196)",
         "bg-user-icons": "rgba(79, 84, 92, 0.6)"
       },
     },

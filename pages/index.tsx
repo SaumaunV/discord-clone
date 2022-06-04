@@ -1,48 +1,56 @@
 import { Channel } from "@prisma/client";
-import type { NextPage } from "next";
-import { useRouter } from "next/router";
-import Chat from "../components/Chat";
-import Sidebar from "../components/Sidebar";
-import StateProvider, { initialState, reducer } from "../context/StateProvider";
-import prisma from "../prisma";
+import { signIn, signOut, useSession } from "next-auth/react";
 
-interface Props {
-  textChannels: Channel[];
-  voiceChannels: Channel[];
-}
 
-const Home = ({ textChannels, voiceChannels }: Props) => {
+const Home = () => {
 
-  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const refreshData = () => {
-    router.replace(router.asPath);
+
+  if(status === 'loading'){
+    return <h1>Loading...</h1>;
+  }
+  if(session){
+    return (
+      <div className="grid place-items-center h-screen w-full">
+        <div>
+          <img
+            src="https://logos-download.com/wp-content/uploads/2021/01/Discord_Logo-1.png"
+            alt="discord logo"
+            className="object-contain h-40"
+          />
+        </div>
+        <h1>Signed in as  {session.user?.email}</h1>
+        <button
+          className="w-80 font-semibold text-white bg-blue-button px-4 py-2 rounded-[3px] hover:bg-blue-button-hover transition"
+          onClick={() => signOut()}
+        >
+          Sign out
+        </button>
+      </div>
+    );
   }
 
-  return (
-    <StateProvider reducer={reducer} initialState={initialState}>
-      <div className="flex h-screen">
-        <Sidebar textChannels={textChannels} voiceChannels={voiceChannels} refreshData={refreshData} />
-        <Chat />
-      </div>
-    </StateProvider>
-  );
-};
 
-export async function getServerSideProps() {
-  const textChannels = await prisma.channel.findMany({
-    where: {
-      type: 'text'
-    }
-  });
-  const voiceChannels = await prisma.channel.findMany({
-    where: {
-      type: 'voice'
-    }
-  });
-  return {
-    props: { textChannels, voiceChannels },
-  };
+   return (
+
+     <div className="grid place-items-center h-screen w-full">
+       <div>
+         <img
+           src="https://logos-download.com/wp-content/uploads/2021/01/Discord_Logo-1.png"
+           alt="discord logo"
+           className="object-contain h-40"
+         />
+       </div>
+       <button className="w-80 font-semibold text-white bg-blue-button px-4 py-2 rounded-[3px] hover:bg-blue-button-hover transition"
+       onClick={() => signIn('google', {callbackUrl: `/1`})}
+       >
+         Sign in with Google
+       </button>
+     </div>
+   );
+
+
 }
 
 export default Home;
