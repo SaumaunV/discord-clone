@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .navbar-icon {
+    @apply flex items-center justify-center h-12 w-12 my-3 mx-auto shadow-lg bg-gray-chat
+    text-green-icons hover:bg-green-icons hover:text-white rounded-3xl hover:rounded-2xl 
+    transition-all;
+  }
+}
+
 
 html,
 body {

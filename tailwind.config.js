@@ -6,6 +6,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        "gray-navbar": "#202225",
         "gray-sidebar": "#2F3136",
         "gray-message": "#40444B",
         "gray-user": "#292B2F",
@@ -20,7 +21,8 @@ module.exports = {
         "modal-bg-buttons": "rgb(47, 49, 54)",
         "blue-button": "rgb(88, 101, 242)",
         "blue-button-hover": "rgb(71, 82, 196)",
-        "bg-user-icons": "rgba(79, 84, 92, 0.6)"
+        "bg-user-icons": "rgba(79, 84, 92, 0.6)",
+        "green-icons": "#3BA55D",
       },
     },
   },
