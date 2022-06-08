@@ -11,18 +11,18 @@ datasource db {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -45,6 +45,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  servers       Server[]
 }
 
 model VerificationToken {
@@ -55,14 +56,28 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model Server {
+  id       String    @id @default(cuid())
+  name     String    @db.VarChar(255)
+  users    User[]
+  channels Channel[]
+}
+
 model Channel {
-  id String @id @default(cuid())
-  name String @db.VarChar(255)
-  type String @db.VarChar(255)
+  id       String  @id @default(cuid())
+  name     String  @db.VarChar(255)
+  type     String  @db.VarChar(255)
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+  messages Message[]
 }
 
 model Message {
-  id String @id @default(cuid())
+  id        String   @id @default(cuid())
+  user      String
+  image     String
   createdAt DateTime @default(now())
-  message String @db.VarChar(255)
+  message   String   @db.VarChar(255)
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  channelId String
 }
