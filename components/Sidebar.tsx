@@ -8,31 +8,34 @@ import { BsHeadphones } from 'react-icons/bs';
 import { IoMdSettings } from "react-icons/io";
 import Modal from './Modal';
 import { Channel } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 
 interface Props {
+  serverName: string
   textChannels: Channel[];
   voiceChannels: Channel[];
   refreshData: () => void
 }
+//https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3
 
-
-function Sidebar({ textChannels, voiceChannels, refreshData }: Props) {
+function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props) {
 
   const [modal, setModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [mic, setMic] = useState(true);
+  const {data: session} = useSession();
+
 
   return (
-    <div className="bg-gray-sidebar flex flex-col flex-[0.15]">
+    <div className="bg-gray-sidebar flex flex-col w-60">
       <div className="flex justify-between items-center h-12 p-3 text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
-        Test
+        {serverName}
         <IoIosArrowDown />
       </div>
-
       <div className="flex-1">
         <div className="flex items-center justify-between pr-3 text-gray-sidetext mt-4">
           <div className="flex items-center text-xs font-medium">
-            <IoIosArrowDown className="mr-0.5" /> TEXT CHANNELS
+            <IoIosArrowDown className="mx-0.5" /> TEXT CHANNELS
           </div>
           <IoMdAdd
             onClick={() => {
@@ -53,7 +56,7 @@ function Sidebar({ textChannels, voiceChannels, refreshData }: Props) {
         ))}
         <div className="flex items-center justify-between pr-3 text-gray-sidetext mt-5">
           <div className="flex items-center text-xs font-medium">
-            <IoIosArrowDown className="mr-0.5" /> VOICE CHANNELS
+            <IoIosArrowDown className="mx-0.5" /> VOICE CHANNELS
           </div>
           <IoMdAdd
             onClick={() => {
@@ -73,16 +76,11 @@ function Sidebar({ textChannels, voiceChannels, refreshData }: Props) {
           />
         ))}
       </div>
-
       <div className="flex items-center bg-gray-user h-14 px-2">
-        <img
-          src="https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3"
-          alt="user profile"
-          className="h-8 mr-2 rounded-full"
-        />
+        <img src={session?.user?.image!} alt="user profile" className="h-8 mr-2 rounded-full" />
         <div className="flex-1">
           <div className="text-sm leading-[18px] text-white font-semibold">
-            SV
+            {session?.user?.name}
           </div>
           <div className="text-xs leading-[13px] text-gray-sidetext">#8039</div>
         </div>
@@ -105,7 +103,6 @@ function Sidebar({ textChannels, voiceChannels, refreshData }: Props) {
           </div>
         </div>
       </div>
-
       {modal && (
         <Modal type={modalType} setModal={setModal} refreshData={refreshData} />
       )}
