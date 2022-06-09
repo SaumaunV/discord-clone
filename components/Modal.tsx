@@ -1,7 +1,10 @@
+import { Channel, User } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
+import { useStateValue } from "../context/StateProvider";
 
 interface Props {
   type: string;
@@ -9,14 +12,24 @@ interface Props {
   refreshData: () => void
 }
 
+interface ServerType {
+  name: string,
+  userId: string,
+  //channels: Channel[];
+}
+
 interface ChannelType {
   name: string;
   type: string;
+  serverId: string
 }
 
 function Modal({ type, setModal, refreshData }: Props) {
+  const [{ server }] = useStateValue();
+  const { data: session } = useSession();
   const background = useRef(null);
-  const [channelName, setChannelName] = useState("");
+  const [value, setValue] = useState("");
+  const [serverName, setServerName] = useState("");
 
   const closeModal = (e: MouseEvent<HTMLDivElement>) => {
     if (background.current === e.target) {
@@ -24,9 +37,16 @@ function Modal({ type, setModal, refreshData }: Props) {
     }
   };
 
+  const createServer = async (data: ServerType) => {
+    await fetch('/api/server', {
+      body: JSON.stringify(data),
+      method: 'POST',
+    });
+    refreshData();
+  }
+
   const createChannel = async (data: ChannelType) => {
-    console.log("yo")
-    console.log(JSON.stringify(data));
+    //console.log(JSON.stringify(data));
     await fetch("/api/channel", {
       body: JSON.stringify(data),
       method: 'POST',
@@ -35,7 +55,13 @@ function Modal({ type, setModal, refreshData }: Props) {
   }
 
   const createButtonHandler = () => {
-    createChannel({name: channelName, type});
+    if(type === 'createServer'){
+      createServer({name: value, userId: session?.userId as string});
+    }
+    else {
+      createChannel({ name: value, type, serverId: server });
+    }
+    
     setModal(false);
   }
 
@@ -43,12 +69,12 @@ function Modal({ type, setModal, refreshData }: Props) {
     <div
       ref={background}
       onClick={closeModal}
-      className="w-full h-full bg-black/80 fixed flex items-center justify-center"
+      className="w-full h-full bg-black/80 fixed top-0 left-0 flex items-center justify-center"
     >
       <div className="bg-gray-modalbg h-auto w-3/12 rounded-xl">
         <div className="flex items-center justify-between pl-4 pr-2">
           <h1 className="text-white mb-3 font-medium text-xl pt-4">
-            Create Channel
+            {type === 'createServer' ? 'Create Server' : 'Create Channel'}
           </h1>
           <IoCloseSharp
             onClick={() => setModal(false)}
@@ -58,14 +84,14 @@ function Modal({ type, setModal, refreshData }: Props) {
 
         <div className="px-4">
           <h5 className="uppercase text-xs font-medium text-gray-text mb-2">
-            Channel Name
+            {type === 'createServer' ? 'Server Name': 'Channel Name'}
           </h5>
           <div className="bg-modal-input-bg h-10 rounded-[3px] flex items-center p-2 text-gray-text">
-            {type === 'text' ? <FaHashtag /> : <IoMdVolumeHigh className="text-xl"/>}
+            {type === 'text' ? <FaHashtag /> : type === 'voice' ? <IoMdVolumeHigh className="text-xl"/> : ''}
             <input
               type="text"
-              placeholder="new-channel"
-              onChange={(e) => setChannelName(e.target.value)}
+              placeholder={type === 'createServer' ? 'new-server' : "new-channel"}
+              onChange={(e) => setValue(e.target.value)}
               className="bg-modal-input-bg rounded-[3px] w-full h-full outline-none ml-2 placeholder:opacity-70"
             />
           </div>
@@ -81,10 +107,10 @@ function Modal({ type, setModal, refreshData }: Props) {
           <button
             className="bg-blue-button px-4 py-2 rounded-[3px] font-medium disabled:cursor-not-allowed
           disabled:opacity-50 disabled:bg-blue-button hover:bg-blue-button-hover transition"
-            disabled={channelName ? false : true}
+            disabled={value ? false : true}
             onClick={createButtonHandler}
           >
-            Create Channel
+            {type === 'createServer' ? 'Create Server' : 'Create Channel'}
           </button>
         </div>
       </div>
