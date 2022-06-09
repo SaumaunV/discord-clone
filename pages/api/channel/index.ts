@@ -5,15 +5,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
-    try {
-      //const data = JSON.parse(req.body);
-      const channels = await prisma.channel.findMany();
-      res.status(200).json({ channels });
-    } catch (error) {
-      res.status(400).json({ error });
-    }
-  }
+  // if (req.method === "GET") {
+  //   try {
+  //     //const data = JSON.parse(req.body);
+  //     const channels = await prisma.channel.findMany();
+  //     res.status(200).json({ channels });
+  //   } catch (error) {
+  //     res.status(400).json({ error });
+  //   }
+  // }
 
   if (req.method === "POST") {
     try {
