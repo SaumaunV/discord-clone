@@ -46,6 +46,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   servers       Server[]
+  selectedchannels  Channel[]
 }
 
 model VerificationToken {
@@ -70,6 +71,7 @@ model Channel {
   server   Server @relation(fields: [serverId], references: [id])
   serverId String
   messages Message[]
+  users    User[]
 }
 
 model Message {
