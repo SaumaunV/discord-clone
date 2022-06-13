@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
@@ -17,6 +19,7 @@ function SidebarChannel({ type, id, name, refreshData }: Props) {
     useComponentVisible(false);
   const [dropdown, setDropdown] = useState(false);
   const [{ channel }, dispatch] = useStateValue();
+  const router = useRouter();
 
   const toggleChannel = () => {
     dispatch({ type: "CHANGE_CHANNEL", id, name });
@@ -43,11 +46,10 @@ function SidebarChannel({ type, id, name, refreshData }: Props) {
   }, [isComponentVisible]);
 
   return (
-    <>
       <div
         className={`mx-2 mt-1 px-2 py-1 text-gray-sidetext font-medium flex items-center
         rounded cursor-pointer select-none group ${
-          channel.id === id
+          router.query.channel === id
             ? "bg-gray-channel"
             : "hover:bg-gray-channel/50 hover:text-white/[0.7]  "
         }`}
@@ -59,14 +61,14 @@ function SidebarChannel({ type, id, name, refreshData }: Props) {
           ) : (
             <IoMdVolumeHigh className="mr-1 text-xl" />
           )}
-          <span className={`${channel.id === id && "text-white"}`}>{name}</span>
+          <span className={`${router.query.channel === id && "text-white"}`}>{name}</span>
         </div>
 
         <div className="relative">
           <IoEllipsisVertical
             onClick={toggleDropdown}
             className={`text-gray-icons hover:text-white cursor-pointer ${
-              channel.id !== id && "hidden group-hover:block"
+              router.query.channel !== id && "hidden group-hover:block"
             }`}
           />
           {dropdown && isComponentVisible && (
@@ -86,7 +88,6 @@ function SidebarChannel({ type, id, name, refreshData }: Props) {
           )}
         </div>
       </div>
-    </>
   );
 }
 
