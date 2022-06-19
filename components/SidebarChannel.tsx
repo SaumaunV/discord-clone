@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
@@ -11,10 +10,11 @@ interface Props {
   type: string;
   id: string;
   name: string;
+  removable: boolean
   refreshData: () => void;
 }
 
-function SidebarChannel({ type, id, name, refreshData }: Props) {
+function SidebarChannel({ type, id, name, removable, refreshData }: Props) {
   const { ref, isComponentVisible, setIsComponentVisible } =
     useComponentVisible(false);
   const [dropdown, setDropdown] = useState(false);
@@ -64,29 +64,31 @@ function SidebarChannel({ type, id, name, refreshData }: Props) {
           <span className={`${router.query.channel === id && "text-white"}`}>{name}</span>
         </div>
 
-        <div className="relative">
-          <IoEllipsisVertical
-            onClick={toggleDropdown}
-            className={`text-gray-icons hover:text-white cursor-pointer ${
-              router.query.channel !== id && "hidden group-hover:block"
-            }`}
-          />
-          {dropdown && isComponentVisible && (
-            <div
-              ref={ref}
-              className="bg-black text-red-500 text-sm absolute w-36 h-9 p-1 text-center align-middle center font-normal rounded z-10"
-            >
-              <li
-                onClick={deleteChannel}
-                className="flex list-none hover:text-white justify-center items-center hover:bg-red-500 hover:rounded-sm w-full h-full"
+        {removable && (
+          <div className="relative">
+            <IoEllipsisVertical
+              onClick={toggleDropdown}
+              className={`text-gray-icons hover:text-white cursor-pointer ${
+                router.query.channel !== id && "hidden group-hover:block"
+              }`}
+            />
+            {dropdown && isComponentVisible && (
+              <div
+                ref={ref}
+                className="bg-black text-red-500 text-sm absolute w-36 h-9 p-1 text-center align-middle center font-normal rounded z-10"
               >
-                <a onClick={(e) => e.preventDefault()} href="">
-                  Delete Channel
-                </a>
-              </li>
-            </div>
-          )}
-        </div>
+                <li
+                  onClick={deleteChannel}
+                  className="flex list-none hover:text-white justify-center items-center hover:bg-red-500 hover:rounded-sm w-full h-full"
+                >
+                  <a onClick={(e) => e.preventDefault()} href="">
+                    Delete Channel
+                  </a>
+                </li>
+              </div>
+            )}
+          </div>
+        )}
       </div>
   );
 }
