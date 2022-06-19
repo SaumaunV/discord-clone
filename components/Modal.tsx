@@ -1,5 +1,6 @@
 import { Channel, User } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
@@ -10,6 +11,11 @@ interface Props {
   type: string;
   setModal: Dispatch<SetStateAction<boolean>>;
   refreshData: () => void
+}
+
+interface JoinServerType {
+  serverId: string,
+  userId: string,
 }
 
 interface ServerType {
@@ -25,17 +31,26 @@ interface ChannelType {
 }
 
 function Modal({ type, setModal, refreshData }: Props) {
-  const [{ server }] = useStateValue();
+  //const [{ server }] = useStateValue();
   const { data: session } = useSession();
   const background = useRef(null);
   const [value, setValue] = useState("");
-  const [serverName, setServerName] = useState("");
+  const router = useRouter();
+  //const [serverName, setServerName] = useState("");
 
   const closeModal = (e: MouseEvent<HTMLDivElement>) => {
     if (background.current === e.target) {
       setModal(false);
     }
   };
+
+  const joinServer = async (data: JoinServerType) => {
+    await fetch('/api/server', {
+      body: JSON.stringify(data),
+      method: 'PUT',
+    });
+    refreshData();
+  }
 
   const createServer = async (data: ServerType) => {
     await fetch('/api/server', {
@@ -55,11 +70,14 @@ function Modal({ type, setModal, refreshData }: Props) {
   }
 
   const createButtonHandler = () => {
+    if(type === 'joinServer'){
+      joinServer({serverId: value, userId: session?.userId as string})
+    }
     if(type === 'createServer'){
       createServer({name: value, userId: session?.userId as string});
     }
     else {
-      createChannel({ name: value, type, serverId: server });
+      createChannel({ name: value, type, serverId: router.query.server as string});
     }
     
     setModal(false);
@@ -74,7 +92,7 @@ function Modal({ type, setModal, refreshData }: Props) {
       <div className="bg-gray-modalbg h-auto w-3/12 rounded-xl">
         <div className="flex items-center justify-between pl-4 pr-2">
           <h1 className="text-white mb-3 font-medium text-xl pt-4">
-            {type === 'createServer' ? 'Create Server' : 'Create Channel'}
+            {type === 'createServer' ? 'Create Server': type === 'joinServer' ? 'Join Server' : 'Create Channel'}
           </h1>
           <IoCloseSharp
             onClick={() => setModal(false)}
@@ -84,13 +102,13 @@ function Modal({ type, setModal, refreshData }: Props) {
 
         <div className="px-4">
           <h5 className="uppercase text-xs font-medium text-gray-text mb-2">
-            {type === 'createServer' ? 'Server Name': 'Channel Name'}
+            {type === 'createServer' ? 'Server Name': type === 'joinServer' ? 'Server ID' : 'Channel Name'}
           </h5>
           <div className="bg-modal-input-bg h-10 rounded-[3px] flex items-center p-2 text-gray-text">
             {type === 'text' ? <FaHashtag /> : type === 'voice' ? <IoMdVolumeHigh className="text-xl"/> : ''}
             <input
               type="text"
-              placeholder={type === 'createServer' ? 'new-server' : "new-channel"}
+              placeholder={type === 'createServer' ? 'new-server': type === 'joinServer' ? 'server-id' : "new-channel"}
               onChange={(e) => setValue(e.target.value)}
               className="bg-modal-input-bg rounded-[3px] w-full h-full outline-none ml-2 placeholder:opacity-70"
             />
@@ -110,7 +128,7 @@ function Modal({ type, setModal, refreshData }: Props) {
             disabled={value ? false : true}
             onClick={createButtonHandler}
           >
-            {type === 'createServer' ? 'Create Server' : 'Create Channel'}
+            {type === 'createServer' ? 'Create Server': type === 'joinServer' ? 'Join Server' : 'Create Channel'}
           </button>
         </div>
       </div>
