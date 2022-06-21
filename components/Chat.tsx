@@ -1,12 +1,34 @@
+import { Channel, Message, User } from "@prisma/client";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { FormEvent, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdAddCircle } from "react-icons/io";
 import { useStateValue } from "../context/StateProvider";
-import Message from "./Message";
+import ChatMessage from "./ChatMessage";
+import ServerMembers from "./ServerMembers";
 
-function Chat() {
-  const [{ channel }] = useStateValue();
+interface Props {
+  channel: Channel
+  messages: Message[]
+  members: User[]
+  refreshData: () => void
+}
+
+function Chat({ channel, messages, members, refreshData }: Props) {
   const {data: session} = useSession();
+  const [message, setMessage] = useState("");
+  const router = useRouter();
+
+  async function sendMessage(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await fetch('/api/message', {
+      body: JSON.stringify({user: session?.user?.name,  image: session?.user?.image, message, channel: router.query.channel}),
+      method: 'POST'
+    })
+    setMessage("");
+    refreshData();
+  }
 
   return (
     <div className="bg-gray-chat flex flex-col flex-1">
@@ -23,19 +45,38 @@ function Chat() {
         </button>
       </div>
 
-      <div className="flex flex-col flex-1 justify-end">
-        <Message />
-      </div>
+      <div className="flex flex-1">
+        <div className="flex flex-col flex-1">
+          <div className="flex flex-col flex-1  justify-end">
+            {messages.map((message) => (
+              <ChatMessage
+                name={message.user}
+                image={message.image}
+                message={message.message}
+                time={message.createdAt.toString()}
+              />
+            ))}
+          </div>
 
-      <form className="flex m-4 mb-6 items-center bg-gray-message rounded-lg  px-4">
-        <IoMdAddCircle className="text-2xl text-gray-icons" />
-        <input
-          type="text"
-          placeholder="Message #general"
-          className="w-full h-11 pl-4 rounded-lg bg-gray-message text-white select-none outline-none placeholder:text-gray-chat-text
+          <form
+            onSubmit={sendMessage}
+            className="flex m-4 mb-6 items-center bg-gray-message rounded-lg  px-4"
+          >
+            <button type="submit">
+              <IoMdAddCircle className="text-2xl text-gray-icons hover:text-white transition" />
+            </button>
+            <input
+              type="text"
+              placeholder={`Message #${channel.name}`}
+              className="w-full h-11 pl-4 rounded-lg bg-gray-message text-white select-none outline-none placeholder:text-gray-chat-text
           placeholder:text-opacity-50"
-        />
-      </form>
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </form>
+        </div>
+        <ServerMembers members={members} />
+      </div>
     </div>
   );
 }
