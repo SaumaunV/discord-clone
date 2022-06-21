@@ -9,6 +9,7 @@ import { IoMdSettings } from "react-icons/io";
 import Modal from './Modal';
 import { Channel } from '@prisma/client';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 interface Props {
   serverName: string
@@ -46,13 +47,21 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
           />
         </div>
         {textChannels.map((channel) => (
-          <SidebarChannel
+          <Link
+            href={`/[server]/[channel]`}
+            as={`/${channel.serverId}/${channel.id}`}
             key={channel.id}
-            id={channel.id}
-            name={channel.name}
-            refreshData={refreshData}
-            type={channel.type}
-          />
+          >
+            <a>
+              <SidebarChannel
+                id={channel.id}
+                name={channel.name}
+                refreshData={refreshData}
+                type={channel.type}
+                removable={textChannels.length === 1 ? false : true}
+              />
+            </a>
+          </Link>
         ))}
         <div className="flex items-center justify-between pr-3 text-gray-sidetext mt-5">
           <div className="flex items-center text-xs font-medium">
@@ -73,11 +82,17 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
             name={channel.name}
             refreshData={refreshData}
             type={channel.type}
+            removable={voiceChannels.length === 1 ? false : true}
           />
         ))}
       </div>
+
       <div className="flex items-center bg-gray-user h-14 px-2">
-        <img src={session?.user?.image!} alt="user profile" className="h-8 mr-2 rounded-full" />
+        <img
+          src={session?.user?.image!}
+          alt="user profile"
+          className="h-8 mr-2 rounded-full"
+        />
         <div className="flex-1">
           <div className="text-sm leading-[18px] text-white font-semibold">
             {session?.user?.name}
