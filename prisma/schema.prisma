@@ -45,8 +45,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  servers       Server[]
+  servers       Server[]  @relation("servers-users")
   selectedchannels  Channel[]
+  serversOwned  Server[]
+  messages      Message[]
 }
 
 model VerificationToken {
@@ -60,8 +62,10 @@ model VerificationToken {
 model Server {
   id       String    @id @default(cuid())
   name     String    @db.VarChar(255)
-  users    User[]
+  users    User[]    @relation("servers-users")
   channels Channel[]
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId  String
 }
 
 model Channel {
@@ -76,10 +80,10 @@ model Channel {
 
 model Message {
   id        String   @id @default(cuid())
-  user      String
-  image     String
   createdAt DateTime @default(now())
   message   String   @db.VarChar(255)
   channel   Channel  @relation(fields: [channelId], references: [id])
   channelId String
+  user     User    @relation(fields: [userId], references: [id])
+  userId    String
 }
