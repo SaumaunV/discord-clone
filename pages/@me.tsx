@@ -44,7 +44,7 @@ const User = ({ user }: Props) => {
             channels={user!.selectedchannels}
             refreshData={refreshData}
           />
-          <div className="flex-1 justify-center items-center bg-gray-chat">
+          <div className=" flex flex-1 justify-center items-center bg-gray-chat text-gray-sidetext font-medium text-xl">
             {user?.servers.length === 0 && `You are not part of any servers. To add a server, use the first
              button on the left. To join a server, use the second button on the left.`}
           </div>
