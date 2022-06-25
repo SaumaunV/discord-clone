@@ -12,6 +12,11 @@
   .navbar-server {
     @apply flex items-center justify-center h-12 w-12 my-3 mx-auto shadow-lg text-white;
   }
+
+  .navbar-tooltip {
+    @apply absolute w-auto px-2 py-1 max-w-[150px] m-2 min-w-max left-16 rounded-md shadow-md text-white bg-black text-lg font-bold
+    hidden origin-left
+  }
 }
 
 
