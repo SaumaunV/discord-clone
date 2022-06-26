@@ -1,10 +1,8 @@
-import { connect } from "http2";
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../prisma";
 
 type DataType = {
-  user: string;
-  image: string;
+  userId: string;
   message: string;
   channel: string;
 };
@@ -18,13 +16,16 @@ export default async function handler(
       const data = JSON.parse(req.body) as DataType;
       await prisma.message.create({
         data: {
-          user: data.user,
-          image: data.image,
           message: data.message,
           channel: {
               connect: {
                   id: data.channel
               }
+          },
+          user: {
+            connect: {
+              id: data.userId
+            }
           }
         },
       });
