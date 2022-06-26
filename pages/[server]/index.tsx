@@ -2,6 +2,7 @@ import { Channel, Server, User } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import NavBar from "../../components/NavBar";
 import Sidebar from "../../components/Sidebar";
 import StateProvider, { initialState, reducer } from "../../context/StateProvider";
@@ -28,6 +29,11 @@ const Server = ({ textChannels, voiceChannels, user }: Props) => {
   const router = useRouter();
   const serverids = user?.servers.map(server => server.id);
   const serverName = user?.servers.find(server => server.id === router.query.server)?.name
+  const selectedChannel = user?.selectedchannels.find(channel => channel.serverId === router.query.server);
+
+  useEffect(() => {
+    router.push(`/${router.query.server}/${selectedChannel?.id}`);
+  }, [])
   
   
   if(status === 'loading'){
