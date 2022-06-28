@@ -1,5 +1,6 @@
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
 import { IoEllipsisVertical } from "react-icons/io5";
@@ -10,19 +11,43 @@ interface Props {
   type: string;
   id: string;
   name: string;
-  removable: boolean
+  removable: boolean;
   refreshData: () => void;
+  channel?: string;
+  setChannel: Dispatch<SetStateAction<string>>;
+  switchDeletedChannel: (id: string) => void;
+  defaultChannels: [string, string]
 }
 
-function SidebarChannel({ type, id, name, removable, refreshData }: Props) {
+type DataType = {
+  userId: string;
+  prevChannel: string;
+  selectedChannel: string;
+}
+
+function SidebarChannel({ type, id, name, removable, refreshData, channel, setChannel, switchDeletedChannel, defaultChannels }: Props) {
   const { ref, isComponentVisible, setIsComponentVisible } =
     useComponentVisible(false);
   const [dropdown, setDropdown] = useState(false);
-  const [{ channel }, dispatch] = useStateValue();
+  //const [{ channel }, dispatch] = useStateValue();
   const router = useRouter();
+  const {data: session} = useSession();
 
-  const toggleChannel = () => {
-    dispatch({ type: "CHANGE_CHANNEL", id, name });
+  // if(router.query.channel === id){
+  //   dispatch({ type: "CHANGE_CHANNEL", id, name });
+  // }
+
+  const toggleChannel = async (data: DataType, deleted?: boolean) => {
+    if(channel !== id || deleted) {
+      //dispatch({ type: "CHANGE_CHANNEL", id, name });
+      setChannel(id);    
+      const resp = await fetch('/api/channel/switch', {
+        body: JSON.stringify(data),
+        method: 'PUT'
+      });
+      const respdata = resp.json();
+      console.log(respdata);
+    }   
   };
 
   const toggleDropdown = () => {
@@ -35,7 +60,19 @@ function SidebarChannel({ type, id, name, removable, refreshData }: Props) {
       await fetch(`/api/channel/${id}`, {
         method: "DELETE",
       });
-      refreshData();
+      if (channel === id) {
+        switchDeletedChannel(id);
+        const resp = await toggleChannel({
+          userId: session?.userId as string,
+          prevChannel: channel!,
+          selectedChannel: defaultChannels[0] !== id ? defaultChannels[0] : defaultChannels[1],
+        }, true);
+        console.log(resp);
+      }
+      else {
+        refreshData();
+      }
+      
     } catch (error) {}
   };
 
@@ -53,7 +90,7 @@ function SidebarChannel({ type, id, name, removable, refreshData }: Props) {
             ? "bg-gray-channel"
             : "hover:bg-gray-channel/50 hover:text-white/[0.7]  "
         }`}
-        onClick={toggleChannel}
+        onClick={() => toggleChannel({userId: session?.userId as string, prevChannel: channel!, selectedChannel: id})}
       >
         <div className="flex flex-1 items-center">
           {type === "text" ? (
@@ -78,7 +115,9 @@ function SidebarChannel({ type, id, name, removable, refreshData }: Props) {
                 className="bg-black text-red-500 text-sm absolute w-36 h-9 p-1 text-center align-middle center font-normal rounded z-10"
               >
                 <li
-                  onClick={deleteChannel}
+                  onClick={() => { 
+                    deleteChannel();              
+                  }}
                   className="flex list-none hover:text-white justify-center items-center hover:bg-red-500 hover:rounded-sm w-full h-full"
                 >
                   <a onClick={(e) => e.preventDefault()} href="">

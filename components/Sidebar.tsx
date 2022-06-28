@@ -7,16 +7,26 @@ import { IoMdMicOff } from "react-icons/io";
 import { BsHeadphones } from 'react-icons/bs';
 import { IoMdSettings } from "react-icons/io";
 import Modal from './Modal';
-import { Channel } from '@prisma/client';
+import { Channel, Message, User } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 interface Props {
-  serverName: string
+  channel?:
+    | (Channel & {
+        messages: (Message & {
+          user: User;
+        })[];
+      })
+    | undefined;
+  serverName: string;
   textChannels: Channel[];
   voiceChannels: Channel[];
-  refreshData: () => void
+  refreshData: () => void;
 }
+
+
 //https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3
 
 function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props) {
@@ -24,8 +34,39 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
   const [modal, setModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [mic, setMic] = useState(true);
+  const [server, setServer] = useState("");
+  const [channel_, setChannel] = useState("");
   const {data: session} = useSession();
+  const router = useRouter();
 
+  if(router.query.server && router.query.channel) {
+    if (channel_ === "" || server === "" || server !== router.query.server || router.query.channel !== channel_) {
+      setChannel(router.query.channel as string);
+      setServer(router.query.server as string);
+      //console.log(channel_);
+    }
+  } 
+
+  // const toggleChannel = async (data: DataType, id: string) => {
+  //   if (channel_ !== id) {
+  //     //dispatch({ type: "CHANGE_CHANNEL", id, name });
+  //     setChannel(id);
+  //     await fetch("/api/channel/switch", {
+  //       body: JSON.stringify(data),
+  //       method: "PUT",
+  //     });
+  //   }
+  // };
+
+  function switchDeletedChannel(id: string) {
+    if(textChannels[0].id !== id) {
+      router.push("/[server]/[channel]", `/${server}/${textChannels[0].id}`);
+    }
+    else {
+      router.push("/[server]/[channel]", `/${server}/${textChannels[1].id}`);
+    }
+    //setChannel(textChannels[0].id);   
+  }
 
   return (
     <div className="bg-gray-sidebar flex flex-col w-60">
@@ -59,6 +100,10 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
                 refreshData={refreshData}
                 type={channel.type}
                 removable={textChannels.length === 1 ? false : true}
+                channel={channel_}
+                setChannel={setChannel}
+                switchDeletedChannel={switchDeletedChannel}
+                defaultChannels={[textChannels[0].id, textChannels[1]?.id]}
               />
             </a>
           </Link>
@@ -83,6 +128,9 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
             refreshData={refreshData}
             type={channel.type}
             removable={voiceChannels.length === 1 ? false : true}
+            setChannel={setChannel}
+            switchDeletedChannel={switchDeletedChannel}
+            defaultChannels={[textChannels[0].id, textChannels[1]?.id]}
           />
         ))}
       </div>
