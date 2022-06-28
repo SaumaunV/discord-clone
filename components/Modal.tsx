@@ -1,11 +1,9 @@
-import { Channel, User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Dispatch, MouseEvent, SetStateAction, useRef, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
-import { useStateValue } from "../context/StateProvider";
 
 interface Props {
   type: string;
@@ -45,18 +43,33 @@ function Modal({ type, setModal, refreshData }: Props) {
   };
 
   const joinServer = async (data: JoinServerType) => {
-    await fetch('/api/server', {
+    const resp = await fetch('/api/server', {
       body: JSON.stringify(data),
       method: 'PUT',
     });
+    const respData = await resp.json();
+    if(resp.status === 200){
+      await fetch('/api/channel/userChannel', {
+        body: JSON.stringify(data),
+        method: 'PUT',
+      })
+    }
+    console.log(respData);
     refreshData();
   }
 
   const createServer = async (data: ServerType) => {
-    await fetch('/api/server', {
+    const resp = await fetch('/api/server', {
       body: JSON.stringify(data),
       method: 'POST',
     });
+    const respData = await resp.json();
+    if(resp.status === 200) {
+      await fetch('/api/channel/userChannel', {
+        body: JSON.stringify({...data, serverId: respData.serverId}),
+        method: 'PUT',
+      })
+    }
     refreshData();
   }
 
@@ -73,7 +86,7 @@ function Modal({ type, setModal, refreshData }: Props) {
     if(type === 'joinServer'){
       joinServer({serverId: value, userId: session?.userId as string})
     }
-    if(type === 'createServer'){
+    else if(type === 'createServer'){
       createServer({name: value, userId: session?.userId as string});
     }
     else {
