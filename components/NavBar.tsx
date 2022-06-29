@@ -1,44 +1,36 @@
-import { Server } from '@prisma/client'
-import Link from 'next/link'
-import { HiOutlinePlus } from 'react-icons/hi'
-import { BsFillPeopleFill } from 'react-icons/bs'
-import NavServer from './NavServer'
-import { useStateValue } from '../context/StateProvider'
-import { useState } from 'react'
-import Modal from './Modal'
+import { Channel, Server } from "@prisma/client";
+import { HiOutlinePlus } from "react-icons/hi";
+import { BsFillPeopleFill } from "react-icons/bs";
+import { useState } from "react";
+import Modal from "./Modal";
+import NavServer from "./NavServer";
 
 interface Props {
-  servers: Server[],
-  refreshData: () => void
+  servers: Server[];
+  channels: Channel[];
+  refreshData: () => void;
 }
 
-function NavBar({ servers, refreshData }: Props) {
-  const [{ server }, dispatch] = useStateValue();
+function NavBar({ servers, channels, refreshData }: Props) {
   const [modal, setModal] = useState(false);
   const [modalType, setModalType] = useState("");
+  const [contextMenuServer, setContextMenuServer] = useState("");
+
+  const serverids = channels.map((channel) => channel.serverId);
+  const channelids = channels.map((channel) => channel.id);
 
   return (
     <div className="w-[72px] bg-gray-navbar shadow">
-      {/* {servers.map((server) => (
-        //<Link href={`/[server]`} as={`/${server.id}`} key={server.id}>
-        <NavServer id={server.id} key={server.id}>
-          {server.name.substring(0, 1).toUpperCase()}
-        </NavServer>
-        //</Link>
-      ))} */}
-      {servers.map((s) => (
-        <Link href={`/[server]`} as={`/${s.id}`} key={s.id}>
-          <button
-            onClick={() => dispatch({ type: "CHANGE_SERVER", id: s.id })}
-            className={`navbar-server ${
-              server === s.id
-                ? "bg-blue-button rounded-2xl"
-                : "bg-gray-chat hover:bg-blue-button rounded-3xl hover:rounded-2xl transition-all"
-            }`}
-          >
-            {s.name.substring(0, 1).toUpperCase()}
-          </button>
-        </Link>
+      {servers.map((server) => (
+        <NavServer
+          server={server}
+          serverids={serverids}
+          channelids={channelids}
+          refreshData={refreshData}
+          contextMenuServer={contextMenuServer}
+          setContextMenuServer={setContextMenuServer}
+          key={server.id}
+        />
       ))}
       <button
         className="navbar-icon"
@@ -65,4 +57,4 @@ function NavBar({ servers, refreshData }: Props) {
   );
 }
 
-export default NavBar
+export default NavBar;
