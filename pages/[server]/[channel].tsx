@@ -14,7 +14,9 @@ import prisma from "../../prisma";
 
 interface Props {
   textChannels: (Channel & {
-    messages: Message[];
+    messages: (Message & {
+      user: User;
+    })[];
   })[];
   voiceChannels: Channel[];
   user:
@@ -67,6 +69,7 @@ const Channel = ({ textChannels, voiceChannels, user }: Props) => {
             voiceChannels={voiceChannels.filter(
               (channel) => channel.serverId === router.query.server
             )}
+            channel={currentChannel}
             refreshData={refreshData}
           />
           <Chat channel={currentChannel!} messages={currentChannel!.messages} refreshData={refreshData} members={serverMembers!} />
@@ -83,7 +86,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       type: "text",
     },
     include: {
-      messages: true
+      messages: {
+        include: {
+          user: true
+        }
+      }
     },
   });
   const voiceChannels = prisma.channel.findMany({
