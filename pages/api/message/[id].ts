@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../prisma";
+import pusher from "../../../pusher";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,6 +14,9 @@ export default async function handler(
         id: messageId as string,
       },
     });
+    await pusher.trigger(`presence-channel-${message.channelId}`, 'chat-delete-message', {
+      messageId: message.id
+    })
     res.json(message);
   }
 }
