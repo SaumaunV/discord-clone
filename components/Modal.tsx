@@ -19,7 +19,6 @@ interface JoinServerType {
 interface ServerType {
   name: string,
   userId: string,
-  //channels: Channel[];
 }
 
 interface ChannelType {
@@ -29,12 +28,10 @@ interface ChannelType {
 }
 
 function Modal({ type, setModal, refreshData }: Props) {
-  //const [{ server }] = useStateValue();
   const { data: session } = useSession();
   const background = useRef(null);
   const [value, setValue] = useState("");
   const router = useRouter();
-  //const [serverName, setServerName] = useState("");
 
   const closeModal = (e: MouseEvent<HTMLDivElement>) => {
     if (background.current === e.target) {
@@ -74,12 +71,10 @@ function Modal({ type, setModal, refreshData }: Props) {
   }
 
   const createChannel = async (data: ChannelType) => {
-    //console.log(JSON.stringify(data));
     await fetch("/api/channel", {
       body: JSON.stringify(data),
       method: 'POST',
     });
-    refreshData();
   }
 
   const createButtonHandler = () => {
