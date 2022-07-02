@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../prisma";
+import pusher from "../../../pusher";
 
 type DataType = {
   name: string,
@@ -14,7 +15,7 @@ export default async function handler(
   if (req.method === "POST") {
     try {
       const data = JSON.parse(req.body) as DataType;
-      await prisma.channel.create({
+      const channel = await prisma.channel.create({
         data: {
           name: data.name,
           type: data.type,
@@ -25,6 +26,9 @@ export default async function handler(
           }
         }
       });
+      await pusher.trigger(`presence-channel-${data.serverId}`, 'channel-update', {
+        channel
+      })
       res.status(200).json({ message: "submitted successfully" });
     } catch (error) {
       res.status(400).json({ error });
