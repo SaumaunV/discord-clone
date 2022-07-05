@@ -3,7 +3,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useStateValue } from "../context/StateProvider";
 
 interface Props {
   server: Server;
@@ -21,7 +20,6 @@ type removeDataType = {
 
 function NavServer({ server, serverids, channelids, refreshData, contextMenuServer, setContextMenuServer }: Props) {
   const {data: session} = useSession();
-  //const [{ server }, dispatch] = useStateValue();
   const [contextMenu, setContextMenu] = useState(false);
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
   const router = useRouter();
@@ -43,15 +41,32 @@ function NavServer({ server, serverids, channelids, refreshData, contextMenuServ
         if(router.query.server === server.id) {
           router.push('/@me');
         }
-        refreshData();
+        else {
+          refreshData();
+        }
+        
       } catch (error) {}
     }
     else {
-      await fetch('/api/server/leave', {
-        body: JSON.stringify(data),
-        method: 'PUT'
-      });
-      refreshData();
+      try {
+        //router.push('/@me');
+        await fetch("/api/server/leave", {
+          body: JSON.stringify(data),
+          method: "DELETE",
+        });
+        const resp = await fetch('/api/channel/userChannel', {
+          body: JSON.stringify(data),
+          method: 'DELETE'
+        });
+        const respdata =  await resp.json();
+        console.log(respdata);
+        if (router.query.server === server.id) {
+          router.push('/@me');
+        } else {
+          refreshData();
+        }       
+      } catch (error) {}
+      
     }
   }
 
