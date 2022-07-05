@@ -8,7 +8,7 @@ function ServerMembers({ members }: Props) {
   return (
     <div className="w-60 bg-gray-sidebar pl-5 pt-7">
       {members.map((user) => (
-        <div className="flex items-center mb-2">
+        <div className="flex items-center mb-3" key={user.id}>
           <img
             className="h-8 mr-3 rounded-full"
             src={user.image!}
