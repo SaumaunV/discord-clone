@@ -32,23 +32,27 @@ function NavBar({ servers, channels, refreshData }: Props) {
           key={server.id}
         />
       ))}
+
       <button
-        className="navbar-icon"
+        className="navbar-icon group"
         onClick={() => {
           setModal(true);
           setModalType("createServer");
         }}
       >
         <HiOutlinePlus className="text-xl" />
+        <span className="navbar-tooltip group-hover:block">Add Server</span>
       </button>
+
       <button
-        className="navbar-icon"
+        className="navbar-icon group"
         onClick={() => {
           setModal(true);
           setModalType("joinServer");
         }}
       >
         <BsFillPeopleFill className="text-xl" />
+        <span className="navbar-tooltip group-hover:block">Join Server</span>
       </button>
       {modal && (
         <Modal type={modalType} setModal={setModal} refreshData={refreshData} />
