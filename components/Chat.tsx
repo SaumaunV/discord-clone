@@ -1,34 +1,79 @@
 import { Channel, Message, User } from "@prisma/client";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdAddCircle } from "react-icons/io";
-import { useStateValue } from "../context/StateProvider";
 import ChatMessage from "./ChatMessage";
 import ServerMembers from "./ServerMembers";
+import Pusher from 'pusher-js';
 
 interface Props {
-  channel: Channel
-  messages: Message[]
-  members: User[]
-  refreshData: () => void
+  channel: Channel;
+  messages: (Message & {
+    user: User;
+  })[];
+  members: User[];
+  refreshData: () => void;
 }
+
+type DataType = {
+  message: Message & {
+    user: User;
+  };
+};
 
 function Chat({ channel, messages, members, refreshData }: Props) {
   const {data: session} = useSession();
   const [message, setMessage] = useState("");
+  const [contextMenuMessage, setContextMenuMessage] = useState("");
   const router = useRouter();
+  const [messageArray, setMessageArray] = useState<
+    (Message & {
+      user: User;
+    })[]
+  >([]);
+
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_key!, {
+    cluster: "us2",
+    authEndpoint: "/api/pusher",
+    auth: { params: {userId: session?.userId ,username: session?.user?.name} },
+  });
 
   async function sendMessage(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     await fetch('/api/message', {
-      body: JSON.stringify({user: session?.user?.name,  image: session?.user?.image, message, channel: router.query.channel}),
+      body: JSON.stringify({userId: session?.userId, message, channel: router.query.channel}),
       method: 'POST'
     })
     setMessage("");
-    refreshData();
   }
+
+  useEffect(() => {
+    setMessageArray(messages);
+    pusher.unsubscribe(`presence-channel-${router.query.channel}`);
+    console.log('chat mounted');
+    const channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
+    //console.log(channel);
+    channel.bind("chat-update", (data: DataType) => {
+        const { message } = data;
+        console.log(message);
+        setMessageArray((prevState) => [...prevState, message]); 
+        console.log("pushed new message");
+      }
+    );
+    channel.bind("chat-delete-message", (data: {messageId: string}) => {
+      const { messageId } = data;
+      setMessageArray((prevState => prevState.filter((message) => message.id !== messageId)));
+    })
+
+    return () => {
+      channel.unbind('chat-update');
+      channel.unbind('chat-delete-message');
+      pusher.unsubscribe(`presence-channel-${router.query.channel}`);
+      console.log('chat unmounted');
+    };
+  }, [router.asPath]);
 
   return (
     <div className="bg-gray-chat flex flex-col flex-1">
@@ -48,12 +93,17 @@ function Chat({ channel, messages, members, refreshData }: Props) {
       <div className="flex flex-1">
         <div className="flex flex-col flex-1">
           <div className="flex flex-col flex-1  justify-end">
-            {messages.map((message) => (
+            {messageArray.map((message) => (
               <ChatMessage
-                name={message.user}
-                image={message.image}
+                id={message.id}
+                user={message.user}
+                name={message.user.name!}
+                image={message.user.image!}
                 message={message.message}
                 time={message.createdAt.toString()}
+                contextMenuMessage={contextMenuMessage}
+                setContextMenuMessage={setContextMenuMessage}
+                key={message.id}
               />
             ))}
           </div>
