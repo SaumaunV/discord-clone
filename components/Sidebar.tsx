@@ -1,7 +1,7 @@
 import { IoIosArrowDown } from 'react-icons/io';
 import { IoMdAdd } from 'react-icons/io';
 import SidebarChannel from './SidebarChannel';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IoMdMic } from 'react-icons/io';
 import { IoMdMicOff } from "react-icons/io";
 import { BsHeadphones } from 'react-icons/bs';
@@ -11,6 +11,7 @@ import { Channel, Message, User } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Pusher from 'pusher-js';
 
 interface Props {
   channel?:
@@ -26,6 +27,13 @@ interface Props {
   refreshData: () => void;
 }
 
+type DataType = {
+  userId: string;
+  prevChannel: string;
+  selectedChannel: string;
+};
+
+
 
 //https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3
 
@@ -38,6 +46,16 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
   const [channel_, setChannel] = useState("");
   const {data: session} = useSession();
   const router = useRouter();
+  const [tChannels, setTChannels] = useState<Channel[]>([]);
+  const [vChannels, setVChannels] = useState<Channel[]>([]);
+
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_key!, {
+    cluster: "us2",
+    authEndpoint: "/api/pusher",
+    auth: {
+      params: { userId: session?.userId, username: session?.user?.name },
+    },
+  });
 
   if(router.query.server && router.query.channel) {
     if (channel_ === "" || server === "" || server !== router.query.server || router.query.channel !== channel_) {
@@ -47,16 +65,46 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     }
   } 
 
-  // const toggleChannel = async (data: DataType, id: string) => {
-  //   if (channel_ !== id) {
-  //     //dispatch({ type: "CHANGE_CHANNEL", id, name });
-  //     setChannel(id);
-  //     await fetch("/api/channel/switch", {
-  //       body: JSON.stringify(data),
-  //       method: "PUT",
-  //     });
-  //   }
-  // };
+  const toggleChannel = async (data: DataType, channelId: string, deleted?: boolean) => {
+    if (channel_ !== channelId || deleted) {
+      setChannel(channelId);
+      await fetch("/api/channel/switch", {
+        body: JSON.stringify(data),
+        method: "PUT",
+      });
+    }
+  };
+
+  useEffect(() => {
+    setTChannels(textChannels);
+    setVChannels(voiceChannels);
+    pusher.unsubscribe(`presence-channel-${router.query.server}`);
+    const channel = pusher.subscribe(`presence-channel-${router.query.server}`);
+    //console.log(channel);
+    channel.bind('channel-update', (data: {channel: Channel}) => {
+      const { channel } = data;
+      setTChannels(prevState => [...prevState, channel]);
+      console.log('new channel created');
+    });
+    channel.bind('delete-channel', async (data: {channelId: string}) => {
+      const { channelId } = data;
+      setTChannels(prevState => prevState.filter(channel => channel.id !== channelId));
+      switchDeletedChannel(channelId);
+      await toggleChannel(
+        {
+          userId: session?.userId as string,
+          prevChannel: channel_,
+          selectedChannel:
+            textChannels[0].id !== channelId
+              ? textChannels[0].id
+              : textChannels[1].id,
+        },
+        channelId,
+        true
+      );
+    });
+    return () => pusher.unsubscribe(`presence-channel-${router.query.server}`);
+  }, [router.query.server]);
 
   function switchDeletedChannel(id: string) {
     if(textChannels[0].id !== id) {
@@ -87,7 +135,7 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
             className="text-xl hover:text-white cursor-pointer"
           />
         </div>
-        {textChannels.map((channel) => (
+        {tChannels.map((channel) => (
           <Link
             href={`/[server]/[channel]`}
             as={`/${channel.serverId}/${channel.id}`}
@@ -99,7 +147,7 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
                 name={channel.name}
                 refreshData={refreshData}
                 type={channel.type}
-                removable={textChannels.length === 1 ? false : true}
+                removable={tChannels.length === 1 ? false : true}
                 channel={channel_}
                 setChannel={setChannel}
                 switchDeletedChannel={switchDeletedChannel}
@@ -127,7 +175,7 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
             name={channel.name}
             refreshData={refreshData}
             type={channel.type}
-            removable={voiceChannels.length === 1 ? false : true}
+            removable={vChannels.length === 1 ? false : true}
             setChannel={setChannel}
             switchDeletedChannel={switchDeletedChannel}
             defaultChannels={[textChannels[0].id, textChannels[1]?.id]}
