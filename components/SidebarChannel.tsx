@@ -4,7 +4,6 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
 import { IoMdVolumeHigh } from "react-icons/io";
 import { IoEllipsisVertical } from "react-icons/io5";
-import { useStateValue } from "../context/StateProvider";
 import useComponentVisible from "../customhooks";
 
 interface Props {
@@ -29,24 +28,16 @@ function SidebarChannel({ type, id, name, removable, refreshData, channel, setCh
   const { ref, isComponentVisible, setIsComponentVisible } =
     useComponentVisible(false);
   const [dropdown, setDropdown] = useState(false);
-  //const [{ channel }, dispatch] = useStateValue();
   const router = useRouter();
   const {data: session} = useSession();
 
-  // if(router.query.channel === id){
-  //   dispatch({ type: "CHANGE_CHANNEL", id, name });
-  // }
-
   const toggleChannel = async (data: DataType, deleted?: boolean) => {
     if(channel !== id || deleted) {
-      //dispatch({ type: "CHANGE_CHANNEL", id, name });
       setChannel(id);    
-      const resp = await fetch('/api/channel/switch', {
+      await fetch('/api/channel/switch', {
         body: JSON.stringify(data),
         method: 'PUT'
       });
-      const respdata = resp.json();
-      console.log(respdata);
     }   
   };
 
@@ -56,24 +47,25 @@ function SidebarChannel({ type, id, name, removable, refreshData, channel, setCh
   };
 
   const deleteChannel = async () => {
-    try {
-      await fetch(`/api/channel/${id}`, {
-        method: "DELETE",
-      });
-      if (channel === id) {
-        switchDeletedChannel(id);
-        const resp = await toggleChannel({
-          userId: session?.userId as string,
-          prevChannel: channel!,
-          selectedChannel: defaultChannels[0] !== id ? defaultChannels[0] : defaultChannels[1],
-        }, true);
-        console.log(resp);
-      }
-      else {
-        refreshData();
-      }
+      try {
+        await fetch(`/api/channel/${id}`, {
+          method: "DELETE",
+        });
+      } catch (error) {}
       
-    } catch (error) {}
+      // if (channel === id) {
+      //   switchDeletedChannel(id);
+      //   await toggleChannel({
+      //     userId: session?.userId as string,
+      //     prevChannel: channel!,
+      //     selectedChannel: defaultChannels[0] !== id ? defaultChannels[0] : defaultChannels[1],
+      //   }, true);
+
+        //console.log(resp);
+      // else {
+      //   refreshData();
+      // }
+      
   };
 
   useEffect(() => {
