@@ -27,6 +27,7 @@ function Chat({ channel, messages, members, refreshData }: Props) {
   const {data: session} = useSession();
   const [message, setMessage] = useState("");
   const [contextMenuMessage, setContextMenuMessage] = useState("");
+  let reversed = false;
   const router = useRouter();
   const [messageArray, setMessageArray] = useState<
     (Message & {
@@ -50,15 +51,20 @@ function Chat({ channel, messages, members, refreshData }: Props) {
   }
 
   useEffect(() => {
-    setMessageArray(messages);
+    if (!reversed) {
+      const messagesReversed = messages.reverse();
+      reversed = true;
+      setMessageArray(messagesReversed);
+    }
+    
     pusher.unsubscribe(`presence-channel-${router.query.channel}`);
     console.log('chat mounted');
     const channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-    //console.log(channel);
+    console.log(channel);
     channel.bind("chat-update", (data: DataType) => {
         const { message } = data;
         console.log(message);
-        setMessageArray((prevState) => [...prevState, message]); 
+        setMessageArray((prevState) => [message, ...prevState]); 
         console.log("pushed new message");
       }
     );
@@ -76,7 +82,7 @@ function Chat({ channel, messages, members, refreshData }: Props) {
   }, [router.asPath]);
 
   return (
-    <div className="bg-gray-chat flex flex-col flex-1">
+    <div className="bg-gray-chat flex flex-col flex-1 overflow-hidden">
       <div className="flex items-center justify-between h-12 p-3 w-full text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
         <div className="flex items-center">
           <FaHashtag className="mx-2 text-gray-icons text-xl" />
@@ -90,9 +96,9 @@ function Chat({ channel, messages, members, refreshData }: Props) {
         </button>
       </div>
 
-      <div className="flex flex-1">
-        <div className="flex flex-col flex-1">
-          <div className="flex flex-col flex-1  justify-end">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1 justify-end overflow-hidden">
+          <div className="flex flex-col-reverse overflow-scroll no-scrollbar ">
             {messageArray.map((message) => (
               <ChatMessage
                 id={message.id}
