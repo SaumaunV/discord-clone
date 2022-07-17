@@ -49,7 +49,6 @@ function NavServer({ server, serverids, channelids, refreshData, contextMenuServ
     }
     else {
       try {
-        //router.push('/@me');
         await fetch("/api/server/leave", {
           body: JSON.stringify(data),
           method: "DELETE",
@@ -83,7 +82,6 @@ function NavServer({ server, serverids, channelids, refreshData, contextMenuServ
           setContextMenuServer(server.id);
           setCoordinates({ x: e.pageX, y: e.pageY });
         }}
-        //onClick={() => dispatch({ type: "CHANGE_SERVER", id: s.id })}
         className={`navbar-server group ${
           router.query.server === server.id
             ? "bg-blue-button rounded-2xl"

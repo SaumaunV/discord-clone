@@ -31,7 +31,6 @@ function ChatMessage({ id, user, name, image, message, time, contextMenuMessage,
       await fetch(`/api/message/${id}`, {
         method: "DELETE",
       });
-      //refreshData();
     } catch (error) {}
     
   }
