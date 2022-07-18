@@ -9,7 +9,7 @@ function ServerMembers({ members }: Props) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col w-60 bg-gray-sidebar pl-5 pt-7">
+    <div className="flex flex-col w-60 bg-gray-sidebar pl-5 pt-7 overflow-scroll no-scrollbar">
       <div className="flex-1">
         {members.map((user) => (
           <div className="flex items-center mb-3" key={user.id}>
