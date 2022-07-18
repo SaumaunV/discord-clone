@@ -34,9 +34,6 @@ type DataType = {
 };
 
 
-
-//https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3
-
 function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props) {
 
   const [modal, setModal] = useState(false);
@@ -61,7 +58,6 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     if (channel_ === "" || server === "" || server !== router.query.server || router.query.channel !== channel_) {
       setChannel(router.query.channel as string);
       setServer(router.query.server as string);
-      //console.log(channel_);
     }
   } 
 
@@ -79,8 +75,13 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     setTChannels(textChannels);
     setVChannels(voiceChannels);
     pusher.unsubscribe(`presence-channel-${router.query.server}`);
-    const channel = pusher.subscribe(`presence-channel-${router.query.server}`);
+    let channel = pusher.subscribe(`presence-channel-${router.query.server}`);
     //console.log(channel);
+    channel.bind("pusher:subscription_error", (status: any) => {
+      if (status == 408 || status == 503) {
+        channel = pusher.subscribe(`presence-channel-${router.query.server}`);
+      }
+    });
     channel.bind('channel-update', (data: {channel: Channel}) => {
       const { channel } = data;
       setTChannels(prevState => [...prevState, channel]);
@@ -112,17 +113,16 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     }
     else {
       router.push("/[server]/[channel]", `/${server}/${textChannels[1].id}`);
-    }
-    //setChannel(textChannels[0].id);   
+    }  
   }
 
   return (
-    <div className="bg-gray-sidebar flex flex-col w-60">
+    <div className="bg-gray-sidebar flex flex-col w-60 overflow-hidden">
       <div className="flex justify-between items-center h-12 p-3 text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
         {serverName}
         <IoIosArrowDown />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 overflow-scroll no-scrollbar">
         <div className="flex items-center justify-between pr-3 text-gray-sidetext mt-4">
           <div className="flex items-center text-xs font-medium">
             <IoIosArrowDown className="mx-0.5" /> TEXT CHANNELS
