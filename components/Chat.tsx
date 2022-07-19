@@ -59,8 +59,13 @@ function Chat({ channel, messages, members, refreshData }: Props) {
     
     pusher.unsubscribe(`presence-channel-${router.query.channel}`);
     console.log('chat mounted');
-    const channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
+    let channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
     console.log(channel);
+    channel.bind('pusher:subscription_error', (status: any) => {
+      if(status == 408 || status == 503) {
+        channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
+      }
+    });
     channel.bind("chat-update", (data: DataType) => {
         const { message } = data;
         console.log(message);
