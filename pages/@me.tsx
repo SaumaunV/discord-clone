@@ -1,6 +1,6 @@
 import { Channel, Server, User } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
-import { getSession, useSession } from "next-auth/react";
+import { getSession, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import NavBar from "../components/NavBar";
 import StateProvider, {
@@ -44,8 +44,15 @@ const User = ({ user }: Props) => {
             channels={user!.selectedchannels}
             refreshData={refreshData}
           />
-          <div className=" flex flex-1 justify-center items-center bg-gray-chat text-gray-sidetext font-medium text-xl">
-            {user?.servers.length === 0 && `You are not part of any servers. To add a server, use the first
+          <div className="flex flex-1 justify-center items-center bg-gray-chat text-gray-sidetext font-medium text-xl">
+            <button
+              className="absolute right-3 top-3 bg-gray-user py-1 px-2 rounded text-gray-sidetext hover:bg-gray-900 hover:text-gray-chat-text transition"
+              onClick={() => signOut({ callbackUrl: `/` })}
+            >
+              Sign out
+            </button>
+            {user?.servers.length === 0 &&
+              `You are not part of any servers. To add a server, use the first
              button on the left. To join a server, use the second button on the left.`}
           </div>
         </div>
