@@ -193,7 +193,6 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
           <div className="text-sm leading-[18px] text-white font-semibold">
             {session?.user?.name}
           </div>
-          <div className="text-xs leading-[13px] text-gray-sidetext">#8039</div>
         </div>
         <div className="flex">
           <div
