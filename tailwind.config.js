@@ -4,6 +4,11 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    screens: {
+      'lg': {'max': '1100px'},
+      'md': {'max': '800px'},
+      'sm': {'max': '450px'},
+    },
     extend: {
       colors: {
         "gray-navbar": "#202225",
