@@ -24,7 +24,7 @@ type DataType = {
   selectedChannel: string;
 }
 
-function SidebarChannel({ type, id, name, removable, refreshData, channel, setChannel, switchDeletedChannel, defaultChannels }: Props) {
+function SidebarChannel({ type, id, name, removable, channel, setChannel}: Props) {
   const { ref, isComponentVisible, setIsComponentVisible } =
     useComponentVisible(false);
   const [dropdown, setDropdown] = useState(false);
@@ -52,19 +52,6 @@ function SidebarChannel({ type, id, name, removable, refreshData, channel, setCh
           method: "DELETE",
         });
       } catch (error) {}
-      
-      // if (channel === id) {
-      //   switchDeletedChannel(id);
-      //   await toggleChannel({
-      //     userId: session?.userId as string,
-      //     prevChannel: channel!,
-      //     selectedChannel: defaultChannels[0] !== id ? defaultChannels[0] : defaultChannels[1],
-      //   }, true);
-
-        //console.log(resp);
-      // else {
-      //   refreshData();
-      // }
       
   };
 
@@ -104,7 +91,7 @@ function SidebarChannel({ type, id, name, removable, refreshData, channel, setCh
             {dropdown && isComponentVisible && (
               <div
                 ref={ref}
-                className="bg-black text-red-500 text-sm absolute w-36 h-9 p-1 text-center align-middle center font-normal rounded z-10"
+                className="bg-black text-red-500 text-sm fixed w-36 h-9 p-1 text-center align-middle center font-normal rounded z-10"
               >
                 <li
                   onClick={() => { 
