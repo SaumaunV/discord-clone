@@ -2,6 +2,7 @@ import { Channel, Message, Server, User } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import Chat from "../../components/Chat";
 import NavBar from "../../components/NavBar";
 import Sidebar from "../../components/Sidebar";
@@ -36,6 +37,7 @@ const Channel = ({ textChannels, voiceChannels, user }: Props) => {
       router.push("/");
     },
   });
+  const [menu, setMenu] = useState(false);
   const router = useRouter();
   const channelids = textChannels.filter(channel => channel.serverId === router.query.server).map(channel => channel.id);
   const currentChannel = textChannels.find(channel => channel.id === router.query.channel);
@@ -60,19 +62,34 @@ const Channel = ({ textChannels, voiceChannels, user }: Props) => {
     return (
       <StateProvider reducer={reducer} initialState={initialState}>
         <div className="flex h-screen">
-          <NavBar servers={user!.servers} channels={user!.selectedchannels} refreshData={refreshData} />
-          <Sidebar
-            serverName={serverName!}
-            textChannels={textChannels.filter(
-              (channel) => channel.serverId === router.query.server
-            )}
-            voiceChannels={voiceChannels.filter(
-              (channel) => channel.serverId === router.query.server
-            )}
-            channel={currentChannel}
+          <div className={`flex ${menu ? "sm:flex" : "sm:hidden"}`}>
+            <NavBar
+              servers={user!.servers}
+              channels={user!.selectedchannels}
+              refreshData={refreshData}
+            />
+          </div>
+          <div className={`flex ${menu ? "sm:flex" : "sm:hidden"}`}>
+            <Sidebar
+              serverName={serverName!}
+              textChannels={textChannels.filter(
+                (channel) => channel.serverId === router.query.server
+              )}
+              voiceChannels={voiceChannels.filter(
+                (channel) => channel.serverId === router.query.server
+              )}
+              channel={currentChannel}
+              refreshData={refreshData}
+            />
+          </div>
+
+          <Chat
+            channel={currentChannel!}
+            messages={currentChannel!.messages}
             refreshData={refreshData}
+            members={serverMembers!}
+            setMenu={setMenu}
           />
-          <Chat channel={currentChannel!} messages={currentChannel!.messages} refreshData={refreshData} members={serverMembers!} />
         </div>
       </StateProvider>
     );
