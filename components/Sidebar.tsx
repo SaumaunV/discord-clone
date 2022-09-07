@@ -76,7 +76,6 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     setVChannels(voiceChannels);
     pusher.unsubscribe(`presence-channel-${router.query.server}`);
     let channel = pusher.subscribe(`presence-channel-${router.query.server}`);
-    //console.log(channel);
     channel.bind("pusher:subscription_error", (status: any) => {
       if (status == 408 || status == 503) {
         channel = pusher.subscribe(`presence-channel-${router.query.server}`);
@@ -85,7 +84,6 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
     channel.bind('channel-update', (data: {channel: Channel}) => {
       const { channel } = data;
       setTChannels(prevState => [...prevState, channel]);
-      console.log('new channel created');
     });
     channel.bind('delete-channel', async (data: {channelId: string}) => {
       const { channelId } = data;
@@ -117,7 +115,7 @@ function Sidebar({ serverName, textChannels, voiceChannels, refreshData }: Props
   }
 
   return (
-    <div className="bg-gray-sidebar flex flex-col w-60 overflow-hidden">
+    <div className="bg-gray-sidebar flex flex-col w-60 overflow-hidden lg:w-44 md:w-40">
       <div className="flex justify-between items-center h-12 p-3 text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
         {serverName}
         <IoIosArrowDown />
