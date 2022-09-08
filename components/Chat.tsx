@@ -1,9 +1,10 @@
 import { Channel, Message, User } from "@prisma/client";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { FormEvent, useEffect, useState } from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { FaHashtag } from "react-icons/fa";
-import { IoMdAddCircle } from "react-icons/io";
+import { IoMdAddCircle, IoIosPeople } from "react-icons/io";
+import { GiHamburgerMenu } from 'react-icons/gi';
 import ChatMessage from "./ChatMessage";
 import ServerMembers from "./ServerMembers";
 import Pusher from 'pusher-js';
@@ -15,6 +16,7 @@ interface Props {
   })[];
   members: User[];
   refreshData: () => void;
+  setMenu: Dispatch<SetStateAction<boolean>>;
 }
 
 type DataType = {
@@ -23,9 +25,10 @@ type DataType = {
   };
 };
 
-function Chat({ channel, messages, members, refreshData }: Props) {
+function Chat({ channel, messages, members, setMenu }: Props) {
   const {data: session} = useSession();
   const [message, setMessage] = useState("");
+  const [serverMembers, setMembers] = useState(false);
   const [contextMenuMessage, setContextMenuMessage] = useState("");
   let reversed = false;
   const router = useRouter();
@@ -40,6 +43,10 @@ function Chat({ channel, messages, members, refreshData }: Props) {
     authEndpoint: "/api/pusher",
     auth: { params: {userId: session?.userId ,username: session?.user?.name} },
   });
+
+  function toggleServerMembers(){
+    setMembers((prevState) => !prevState);
+  }
 
   async function sendMessage(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -58,9 +65,7 @@ function Chat({ channel, messages, members, refreshData }: Props) {
     }
     
     pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-    console.log('chat mounted');
     let channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-    console.log(channel);
     channel.bind('pusher:subscription_error', (status: any) => {
       if(status == 408 || status == 503) {
         channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
@@ -68,9 +73,7 @@ function Chat({ channel, messages, members, refreshData }: Props) {
     });
     channel.bind("chat-update", (data: DataType) => {
         const { message } = data;
-        console.log(message);
         setMessageArray((prevState) => [message, ...prevState]); 
-        console.log("pushed new message");
       }
     );
     channel.bind("chat-delete-message", (data: {messageId: string}) => {
@@ -82,7 +85,6 @@ function Chat({ channel, messages, members, refreshData }: Props) {
       channel.unbind('chat-update');
       channel.unbind('chat-delete-message');
       pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-      console.log('chat unmounted');
     };
   }, [router.asPath]);
 
@@ -90,15 +92,22 @@ function Chat({ channel, messages, members, refreshData }: Props) {
     <div className="bg-gray-chat flex flex-col flex-1 overflow-hidden">
       <div className="flex items-center justify-between h-12 p-3 w-full text-white font-medium border-b-[1px] border-neutral-800 border-solid shadow-sm">
         <div className="flex items-center">
+          <GiHamburgerMenu onClick={() => setMenu((prevState) => !prevState)} className="hidden sm:block" />
           <FaHashtag className="mx-2 text-gray-icons text-xl" />
           <span>{channel.name}</span>
         </div>
-        <button
-          className="mr-3 bg-gray-user py-1 px-2 rounded text-gray-sidetext hover:bg-gray-900 hover:text-gray-chat-text transition"
-          onClick={() => signOut({ callbackUrl: `/` })}
-        >
-          Sign out
-        </button>
+        <div className="flex items-center">
+          <IoIosPeople
+            onClick={toggleServerMembers}
+            className="text-2xl mr-2 hidden md:block"
+          />
+          <button
+            className="mr-3 bg-gray-user py-1 px-2 rounded text-gray-sidetext hover:bg-gray-900 hover:text-gray-chat-text transition"
+            onClick={() => signOut({ callbackUrl: `/` })}
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -136,7 +145,9 @@ function Chat({ channel, messages, members, refreshData }: Props) {
             />
           </form>
         </div>
-        <ServerMembers members={members} />
+        <div className={`flex ${serverMembers ? "md:flex" : "md:hidden"}`}>
+          <ServerMembers members={members} />
+        </div>
       </div>
     </div>
   );
