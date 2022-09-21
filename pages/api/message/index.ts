@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../prisma";
-import pusher from "../../../pusher";
 
 type DataType = {
   userId: string;
@@ -33,9 +32,6 @@ export default async function handler(
           user: true,
         }
       });
-      await pusher.trigger(`presence-channel-${data.channel}`, 'chat-update', {
-        message: message
-      })
       res.status(200).json({ message: message });
     } catch (error) {
       res.status(400).json({ error });
