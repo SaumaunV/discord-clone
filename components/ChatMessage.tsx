@@ -1,6 +1,7 @@
-import { User } from "@prisma/client";
+import { Message, User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
 interface Props {
   id: string;
@@ -11,9 +12,10 @@ interface Props {
   time: string;
   contextMenuMessage: string;
   setContextMenuMessage: Dispatch<SetStateAction<string>>;
+  setDeletedMessage: Dispatch<SetStateAction<string>>;
 }
 
-function ChatMessage({ id, user, name, image, message, time, contextMenuMessage, setContextMenuMessage }: Props) {
+function ChatMessage({ id, user, name, image, message, time, contextMenuMessage, setContextMenuMessage, setDeletedMessage }: Props) {
   const {data: session} = useSession();
   const currentDate = new Date();
   const messageDate = new Date(time);
@@ -31,6 +33,7 @@ function ChatMessage({ id, user, name, image, message, time, contextMenuMessage,
       await fetch(`/api/message/${id}`, {
         method: "DELETE",
       });
+      setDeletedMessage(id);
     } catch (error) {}
     
   }

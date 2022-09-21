@@ -8,6 +8,9 @@ import { GiHamburgerMenu } from 'react-icons/gi';
 import ChatMessage from "./ChatMessage";
 import ServerMembers from "./ServerMembers";
 import Pusher from 'pusher-js';
+import io from 'socket.io-client';
+
+const socket = io("https://discord-node-backend.onrender.com");
 
 interface Props {
   channel: Channel;
@@ -28,6 +31,7 @@ type DataType = {
 function Chat({ channel, messages, members, setMenu }: Props) {
   const {data: session} = useSession();
   const [message, setMessage] = useState("");
+  const [deletedMessage, setDeletedMessage] = useState("");
   const [serverMembers, setMembers] = useState(false);
   const [contextMenuMessage, setContextMenuMessage] = useState("");
   let reversed = false;
@@ -50,12 +54,36 @@ function Chat({ channel, messages, members, setMenu }: Props) {
 
   async function sendMessage(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await fetch('/api/message', {
+    const respMessage = await fetch('/api/message', {
       body: JSON.stringify({userId: session?.userId, message, channel: router.query.channel}),
       method: 'POST'
     })
+    const sentMessage: DataType = await respMessage.json();
+    //console.log(respMessage);
+    //console.log(sentMessage);
+    socket.emit("send_message", {message: sentMessage, channel: router.query.channel});
+    setMessageArray((prevState) => [sentMessage.message, ...prevState]);
     setMessage("");
   }
+
+  useEffect(() => {
+    if(deletedMessage !== ""){
+      console.log("yo yo")
+      socket.emit("send_deleted_message", {messageId: deletedMessage, channel: router.query.channel});
+      setMessageArray((prevState) => prevState.filter((message) => message.id !== deletedMessage));
+    }
+  }, [deletedMessage])
+
+  useEffect(() => {
+    console.log("socket changed")
+    socket.on("receive_message", (data: DataType) => {
+      console.log(data);
+      setMessageArray(prevState => [data.message, ...prevState]);
+    });
+    socket.on("delete_message", (data: string) => {
+      setMessageArray((prevState) => prevState.filter((message) => message.id !== data));
+    });
+  }, [socket]);
 
   useEffect(() => {
     if (!reversed) {
@@ -63,29 +91,31 @@ function Chat({ channel, messages, members, setMenu }: Props) {
       reversed = true;
       setMessageArray(messagesReversed);
     }
-    
-    pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-    let channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-    channel.bind('pusher:subscription_error', (status: any) => {
-      if(status == 408 || status == 503) {
-        channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-      }
-    });
-    channel.bind("chat-update", (data: DataType) => {
-        const { message } = data;
-        setMessageArray((prevState) => [message, ...prevState]); 
-      }
-    );
-    channel.bind("chat-delete-message", (data: {messageId: string}) => {
-      const { messageId } = data;
-      setMessageArray((prevState => prevState.filter((message) => message.id !== messageId)));
-    })
 
-    return () => {
-      channel.unbind('chat-update');
-      channel.unbind('chat-delete-message');
-      pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-    };
+    socket.emit("join-channel", router.query.channel)
+    
+    // pusher.unsubscribe(`presence-channel-${router.query.channel}`);
+    // let channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
+    // channel.bind('pusher:subscription_error', (status: any) => {
+    //   if(status == 408 || status == 503) {
+    //     channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
+    //   }
+    // });
+    // channel.bind("chat-update", (data: DataType) => {
+    //     const { message } = data;
+    //     setMessageArray((prevState) => [message, ...prevState]); 
+    //   }
+    // );
+    // channel.bind("chat-delete-message", (data: {messageId: string}) => {
+    //   const { messageId } = data;
+    //   setMessageArray((prevState => prevState.filter((message) => message.id !== messageId)));
+    // })
+
+    // return () => {
+    //   channel.unbind('chat-update');
+    //   channel.unbind('chat-delete-message');
+    //   pusher.unsubscribe(`presence-channel-${router.query.channel}`);
+    // };
   }, [router.asPath]);
 
   return (
@@ -124,6 +154,7 @@ function Chat({ channel, messages, members, setMenu }: Props) {
                 contextMenuMessage={contextMenuMessage}
                 setContextMenuMessage={setContextMenuMessage}
                 key={message.id}
+                setDeletedMessage={setDeletedMessage}
               />
             ))}
           </div>
