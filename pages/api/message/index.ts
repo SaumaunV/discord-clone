@@ -36,7 +36,7 @@ export default async function handler(
       await pusher.trigger(`presence-channel-${data.channel}`, 'chat-update', {
         message: message
       })
-      res.status(200).json({ message: "submitted successfully" });
+      res.status(200).json({ message: message });
     } catch (error) {
       res.status(400).json({ error });
     }
