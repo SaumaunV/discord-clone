@@ -1,6 +1,6 @@
 # Discord Clone
 
-Created with Next.Js
+Created with Next.Js and TypeScript
 
 ## Features
 
@@ -8,24 +8,24 @@ Created with Next.Js
 * Create/Join/Leave servers
 * Create/Delete server channels
 * Create/delete channel messages
-* Realtime Chat functionality using Pusher.js
+* Realtime Chat functionality using Socket.io
 * MySQL database with Prisma ORM for querying data
 
 ## Tech Stack
 
 ### Server
 
-* Node.Js serverless functions
+* Node.Js (Express)
 * MySQL
 
 ### Client
 
 * Next.Js
-* Typescript
+* TypeScript
 * Tailwind CSS
 
 ### Client and Server
 
 * NextAuth
 * Prisma
-* Pusher.js
+* Socket.io
