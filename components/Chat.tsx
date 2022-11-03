@@ -59,8 +59,6 @@ function Chat({ channel, messages, members, setMenu }: Props) {
       method: 'POST'
     })
     const sentMessage: DataType = await respMessage.json();
-    //console.log(respMessage);
-    //console.log(sentMessage);
     socket.emit("send_message", {message: sentMessage, channel: router.query.channel});
     setMessageArray((prevState) => [sentMessage.message, ...prevState]);
     setMessage("");
@@ -93,29 +91,6 @@ function Chat({ channel, messages, members, setMenu }: Props) {
     }
 
     socket.emit("join-channel", router.query.channel)
-    
-    // pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-    // let channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-    // channel.bind('pusher:subscription_error', (status: any) => {
-    //   if(status == 408 || status == 503) {
-    //     channel = pusher.subscribe(`presence-channel-${router.query.channel}`);
-    //   }
-    // });
-    // channel.bind("chat-update", (data: DataType) => {
-    //     const { message } = data;
-    //     setMessageArray((prevState) => [message, ...prevState]); 
-    //   }
-    // );
-    // channel.bind("chat-delete-message", (data: {messageId: string}) => {
-    //   const { messageId } = data;
-    //   setMessageArray((prevState => prevState.filter((message) => message.id !== messageId)));
-    // })
-
-    // return () => {
-    //   channel.unbind('chat-update');
-    //   channel.unbind('chat-delete-message');
-    //   pusher.unsubscribe(`presence-channel-${router.query.channel}`);
-    // };
   }, [router.asPath]);
 
   return (

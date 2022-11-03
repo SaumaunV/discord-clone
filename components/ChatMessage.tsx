@@ -1,7 +1,6 @@
-import { Message, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Socket } from "socket.io-client";
 
 interface Props {
   id: string;
