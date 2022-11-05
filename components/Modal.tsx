@@ -97,7 +97,7 @@ function Modal({ type, setModal, refreshData }: Props) {
       onClick={closeModal}
       className="w-full h-full bg-black/80 fixed top-0 left-0 flex items-center justify-center"
     >
-      <div className="bg-gray-modalbg h-auto w-3/12 rounded-xl">
+      <div className="bg-gray-modalbg h-auto w-3/12 lg:w-1/2 rounded-xl">
         <div className="flex items-center justify-between pl-4 pr-2">
           <h1 className="text-white mb-3 font-medium text-xl pt-4">
             {type === 'createServer' ? 'Create Server': type === 'joinServer' ? 'Join Server' : 'Create Channel'}
