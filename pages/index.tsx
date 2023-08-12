@@ -16,7 +16,7 @@ const Home = () => {
    return (
      <div className="grid place-items-center h-screen w-full">
        <div>
-         <h1 className="font-bold text-7xl text-blue-button-hover">Discord</h1>
+         <h1 className="font-bold text-7xl text-blue-button-hover">Chatter</h1>
        </div>
        <button className="w-80 font-semibold text-white bg-blue-button px-4 py-2 rounded-[3px] hover:bg-blue-button-hover transition"
        onClick={() => signIn('google')}
